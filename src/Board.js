@@ -21,8 +21,8 @@ export default class Board extends React.Component {
       inProgress: React.createRef(),
       complete: React.createRef(),
     }
-    
   }
+
   getClients() {
     return [
       ['1','Stark, White and Abbott','Cloned Optimal Architecture', 'in-progress'],
@@ -52,6 +52,7 @@ export default class Board extends React.Component {
       status: companyDetails[3],
     }));
   }
+  
   renderSwimlane(name, clients, ref) {
     return (
       <Swimlane name={name} clients={clients} dragulaRef={ref}/>
@@ -95,13 +96,9 @@ export default class Board extends React.Component {
     var container = ReactDom.findDOMNode(this);
     //var swimlanes = container.getElementsByClassName("Swimlane-dragColumn");
     var drake = Dragula([this.swimlanes.backlog.current,this.swimlanes.inProgress.current, this.swimlanes.complete.current]);
-    console.log(this.swimlanes);
-    console.log(this);
-
     
+    //set onclick so color changes when card changes swimlane
     drake.on("drop", (e1, target,source,sibling) =>{
-      console.log(this);
-      
       //find the index of src and destination columns
       var src = this.getCardClass(source);
       var des = this.getCardClass(target);
