@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDom from 'react-dom';
 import Dragula from 'dragula';
 import 'dragula/dist/dragula.css';
 import Swimlane from './Swimlane';
@@ -20,6 +21,7 @@ export default class Board extends React.Component {
       inProgress: React.createRef(),
       complete: React.createRef(),
     }
+    
   }
   getClients() {
     return [
@@ -74,5 +76,41 @@ export default class Board extends React.Component {
         </div>
       </div>
     );
+  }
+
+  getCardClass(column){
+    switch(column){
+      case this.swimlanes.backlog.current:
+        return "Card-grey";
+      case this.swimlanes.inProgress.current:
+        return "Card-blue";
+      case this.swimlanes.complete.current:
+        return "Card-green";
+      default:
+        return "";
+    }
+  }
+
+  componentDidMount() {
+    var container = ReactDom.findDOMNode(this);
+    //var swimlanes = container.getElementsByClassName("Swimlane-dragColumn");
+    var drake = Dragula([this.swimlanes.backlog.current,this.swimlanes.inProgress.current, this.swimlanes.complete.current]);
+    console.log(this.swimlanes);
+    console.log(this);
+
+    
+    drake.on("drop", (e1, target,source,sibling) =>{
+      console.log(this);
+      
+      //find the index of src and destination columns
+      var src = this.getCardClass(source);
+      var des = this.getCardClass(target);
+
+      if(src !== "" && des !== ""){
+        //update classList appropriately
+        e1.classList.remove(src);
+        e1.classList.add(des);
+      } 
+    }) 
   }
 }
