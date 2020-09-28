@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDom from 'react-dom';
 import Dragula from 'dragula';
 import 'dragula/dist/dragula.css';
 import Swimlane from './Swimlane';
@@ -93,21 +92,75 @@ export default class Board extends React.Component {
   }
 
   componentDidMount() {
-    var container = ReactDom.findDOMNode(this);
-    //var swimlanes = container.getElementsByClassName("Swimlane-dragColumn");
-    var drake = Dragula([this.swimlanes.backlog.current,this.swimlanes.inProgress.current, this.swimlanes.complete.current]);
+    this.drake = Dragula([
+      this.swimlanes.backlog.current,
+      this.swimlanes.inProgress.current, 
+      this.swimlanes.complete.current]
+    );
     
     //set onclick so color changes when card changes swimlane
-    drake.on("drop", (e1, target,source,sibling) =>{
-      //find the index of src and destination columns
-      var src = this.getCardClass(source);
-      var des = this.getCardClass(target);
+    this.drake.on("drop", (e1, target,source,sibling) => this.updateLogs(e1, target, source,sibling));
+  }
 
-      if(src !== "" && des !== ""){
-        //update classList appropriately
-        e1.classList.remove(src);
-        e1.classList.add(des);
-      } 
-    }) 
+  componentWillUnmount(){
+    this.drake.remove();
+  }
+
+  updateLogs(e1, target, source, sibling){
+    // Reverting DOM changes from Dragula
+    this.drake.cancel(true);
+
+    //find the index of src and destination columns
+    let src = this.getCardClass(source);
+    let des = this.getCardClass(target);
+
+    let targetlane = "backlog";
+    if(des === "Card-blue"){
+      targetlane = "in-progress";
+    }else if(des === "Card-green"){
+      targetlane = "complete";
+    }
+
+    if(src !== "" && des !== ""){
+      //update classList appropriately
+      e1.classList.remove(src);
+      e1.classList.add(des);
+
+      //update clients appropriately
+
+      //make copy of current client state
+      const clientList = [
+        ...this.state.clients.backlog,
+        ...this.state.clients.inProgress,
+        ...this.state.clients.complete
+      ]
+
+      //make a copy of dragged client
+      const client = clientList.find(client => client.id === e1.dataset.id);
+      const clientclone = {
+        ...client,
+        status: targetlane
+      }
+
+      //remove old client info from clients list
+      const updatedClients = clientList.filter(client => client.id !== clientclone.id)
+
+      //add client to client list
+      const index = updatedClients.findIndex( client => sibling && client.id === sibling.dataset.id )
+      updatedClients.splice(index === -1? updatedClients.length: index, 0, clientclone);
+
+      //update react state
+      this.setState({
+        clients: {
+          backlog: updatedClients.filter(client => !client.status || client.status === 'backlog'),
+          inProgress: updatedClients.filter(client => client.status && client.status === 'in-progress'),
+          complete: updatedClients.filter(client => client.status && client.status === 'complete'),
+        }
+      });
+
+      console.log(this.state.clients.backlog);
+      console.log(this.state.clients.inProgress);
+      console.log(this.state.clients.complete);
+    } 
   }
 }
