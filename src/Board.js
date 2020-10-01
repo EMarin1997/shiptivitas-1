@@ -157,10 +157,7 @@ export default class Board extends React.Component {
           complete: updatedClients.filter(client => client.status && client.status === 'complete'),
         }
       });
-
-      console.log(this.state.clients.backlog);
-      console.log(this.state.clients.inProgress);
-      console.log(this.state.clients.complete);
+      
     } 
   }
 }
